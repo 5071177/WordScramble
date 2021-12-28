@@ -17,11 +17,15 @@ struct ContentView: View {
     @State private var errorMessage = ""
     @State private var showingError = false
     
+    @State private var playerScore = 0
+    
     func startGame() {
         if let startWordsURL = Bundle.main.url(forResource: "start", withExtension: "txt") {
             if let startWords = try? String(contentsOf: startWordsURL){
                 let allWords = startWords.components(separatedBy: "\n")
                 
+                playerScore = 0
+                usedWords = [String]()
                 rootWord = allWords.randomElement() ?? "silkworm"
                 
                 return
@@ -38,6 +42,11 @@ struct ContentView: View {
         // exit if the remaining string is empty
         guard answer.count > 0 else {return}
         
+        guard isNotRoot(word: answer) else {
+            wordError(title: "Word is the root word", message: "Did you want to trick me, you, bastard?")
+            return
+        }
+        
         guard isOriginal(word: answer) else {
             wordError(title: "Word used already", message: "Be more original, asshole")
             return
@@ -53,15 +62,30 @@ struct ContentView: View {
             return
         }
         
+        guard isLong(word: answer) else {
+            wordError(title: "Word is too short", message: "Could you stop beeing so short?")
+            return
+        }
+        
+        
         
         withAnimation{
         usedWords.insert(answer, at: 0)
         }
         newWord = ""
+        playerScore += answer.count
     }
     
     func isOriginal(word: String) -> Bool {
         !usedWords.contains(word)
+    }
+    
+    func isLong (word: String) -> Bool {
+        word.count >= 3
+    }
+    
+    func isNotRoot (word: String) -> Bool {
+        word != rootWord
     }
     
     func isPossible(word: String) -> Bool {
@@ -92,9 +116,21 @@ struct ContentView: View {
     }
     
     var body: some View {
+        
+        
+        
         NavigationView {
+            
+            
             List {
+                
                 Section {
+                    Button ("Start new game", action: startGame)
+                    Text ("Player score is \(playerScore)")
+                }
+                
+                Section {
+                    Text ("\(rootWord)")
                     TextField("Enter your word", text: $newWord).autocapitalization(.none)
                 }
                 Section {
@@ -106,7 +142,7 @@ struct ContentView: View {
                     }
                 }
             }
-            .navigationTitle(rootWord)
+            .navigationTitle("WordScramble")
             .onSubmit(addNewWord)
             .onAppear(perform: startGame)
             .alert (errorTitle, isPresented: $showingError) {
