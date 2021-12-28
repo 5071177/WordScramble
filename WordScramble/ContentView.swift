@@ -25,7 +25,7 @@ struct ContentView: View {
                 let allWords = startWords.components(separatedBy: "\n")
                 
                 playerScore = 0
-                usedWords = [String]()
+                usedWords.removeAll()
                 rootWord = allWords.randomElement() ?? "silkworm"
                 
                 return
@@ -125,7 +125,6 @@ struct ContentView: View {
             List {
                 
                 Section {
-                    Button ("Start new game", action: startGame)
                     Text ("Player score is \(playerScore)")
                 }
                 
@@ -149,6 +148,9 @@ struct ContentView: View {
                 Button("OK", role: .cancel) { }
             } message: {
                 Text(errorMessage)
+            }
+            .toolbar{
+                Button("Start new game", action: startGame)
             }
         }
     }
